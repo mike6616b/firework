@@ -1,4 +1,31 @@
-// 取得 canvas 元素和 2D 繪圖環境!
+// 產生大型煙火爆炸
+function createBigFirework(x, y) {
+    // 大型爆炸包含更多的粒子
+    const particleCount = 24 + Math.floor(Math.random() * 12);
+    
+    // 生成一組向四面八方發射的粒子，模擬爆炸效果
+    for (let i = 0; i < particleCount; i++) {
+        // 計算角度，使粒子向各個方向發射
+        const angle = (i / particleCount) * Math.PI * 2;
+        
+        // 使用更大的初始速度
+        const speed = 6 + Math.random() * 8;
+        
+        // 根據角度和速度計算初始速度向量
+        const speedX = Math.cos(angle) * speed;
+        const speedY = Math.sin(angle) * speed;
+        
+        // 創建具有指定方向和速度的粒子
+        const particle = new Particle(x, y);
+        particle.speedX = speedX;
+        particle.speedY = speedY;
+        particle.size = Math.random() * 4 + 2; // 稍大一些的粒子
+        particle.trailLength = 30 + Math.floor(Math.random() * 40); // 更長的尾巴
+        
+        // 添加到粒子數組
+        particles.push(particle);
+    }
+}// 取得 canvas 元素和 2D 繪圖環境
 const canvas = document.getElementById('interactiveCanvas');
 const ctx = canvas.getContext('2d'); // ctx 是 context 的縮寫，是慣用名稱
 
