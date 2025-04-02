@@ -1,4 +1,4 @@
-// 取得 canvas 元素和 2D 繪圖環境
+// 取得 canvas 元素和 2D 繪圖環境!
 const canvas = document.getElementById('interactiveCanvas');
 const ctx = canvas.getContext('2d'); // ctx 是 context 的縮寫，是慣用名稱
 
