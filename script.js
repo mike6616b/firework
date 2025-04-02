@@ -349,6 +349,35 @@ function createBigFirework(x, y) {
     }
 }
 
+// 強制在開始時初始化
+window.addEventListener('load', function() {
+    // 延遲一下再初始化，確保所有元素都已加載
+    setTimeout(function() {
+        // 重新綁定事件
+        setupEvents();
+        
+        // 螢幕尺寸可能在進入頁面時沒有正確設置
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // 強制重繪一次
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        console.log('觸控初始化完成，畫布尺寸：', canvas.width, 'x', canvas.height);
+    }, 300);
+});
+
+// 專門針對iOS的修正
+if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+    // 每幀檢查一次觸控追蹤器
+    setInterval(function() {
+        if (touchActive && touchTracker.positions.length > 0) {
+            checkTouchTracker();
+        }
+    }, 16); // 約60fps
+}
+
 // 監聽視窗大小變化事件，重新設定畫布大小
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
