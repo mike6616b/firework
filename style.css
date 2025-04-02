@@ -1,0 +1,15 @@
+/* 移除預設邊距，讓畫布填滿整個視窗 */
+body {
+    margin: 0;
+    overflow: hidden; /* 隱藏滾動條 */
+    background-color: #000; /* 設定黑色背景 */
+    cursor: none; /* 隱藏預設滑鼠游標 */
+}
+
+/* 讓 canvas 變成區塊元素，才能設定寬高 */
+canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
