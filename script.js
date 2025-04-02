@@ -80,24 +80,29 @@ class Particle {
         this.speedX = 0; // 初始速度，在createFirework中設定
         this.speedY = 0; // 初始速度，在createFirework中設定
         this.color = elegantColors[Math.floor(Math.random() * elegantColors.length)];
-        this.life = 70 + Math.random() * 80; // 大幅增加粒子壽命
+        this.life = 70 + Math.random() * 60; // 減少一些粒子壽命
         this.maxLife = this.life;
         this.initialX = x;
         this.initialY = y;
         this.trail = []; // 儲存粒子的尾巴路徑
-        this.trailLength = 20 + Math.floor(Math.random() * 30); // 大幅增加尾巴長度
+        this.trailLength = 15 + Math.floor(Math.random() * 20); // 減少尾巴長度以提高性能
         this.gravity = 0.03; // 添加重力效果
         this.decay = 0.99; // 慢一點的減速率，產生更長的路徑
+        
+        // 預先添加初始位置到尾巴
+        this.trail.push({x: this.x, y: this.y});
     }
 
     // 更新粒子位置和生命週期
     update() {
-        // 儲存當前位置到尾巴
-        this.trail.push({x: this.x, y: this.y});
-        
-        // 限制尾巴長度
-        if (this.trail.length > this.trailLength) {
-            this.trail.shift();
+        // 儲存當前位置到尾巴，但不是每一幀都存儲
+        if (Math.random() < 0.7) { // 只有70%的幀會記錄位置，減少尾巴點數量
+            this.trail.push({x: this.x, y: this.y});
+            
+            // 限制尾巴長度
+            if (this.trail.length > this.trailLength) {
+                this.trail.shift();
+            }
         }
         
         // 更新位置
@@ -121,9 +126,15 @@ class Particle {
     draw() {
         const headOpacity = this.life / this.maxLife;
         
-        // 繪製尾巴
+        // 繪製尾巴 - 減少繪製點數量以提高性能
         if (this.trail.length > 1) {
-            for (let i = 0; i < this.trail.length - 1; i++) {
+            // 只繪製一部分點，而不是所有點
+            const step = Math.max(1, Math.floor(this.trail.length / 8));
+            
+            for (let i = 0; i < this.trail.length - 1; i += step) {
+                // 確保索引不越界
+                const nextIndex = Math.min(i + step, this.trail.length - 1);
+                
                 // 計算每個尾巴點的透明度，尾端為30%透明度
                 const pointIndex = i / this.trail.length;
                 const tailOpacity = headOpacity * (0.3 + (0.7 * pointIndex));
@@ -133,7 +144,7 @@ class Particle {
                 
                 ctx.beginPath();
                 ctx.moveTo(this.trail[i].x, this.trail[i].y);
-                ctx.lineTo(this.trail[i+1].x, this.trail[i+1].y);
+                ctx.lineTo(this.trail[nextIndex].x, this.trail[nextIndex].y);
                 ctx.strokeStyle = this.color + Math.floor(tailOpacity * 255).toString(16).padStart(2, '0');
                 ctx.lineWidth = lineWidth;
                 ctx.stroke();
@@ -144,20 +155,12 @@ class Particle {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size * headOpacity, 0, Math.PI * 2);
         
-        // 創建粒子頭部的漸變
-        const particleGradient = ctx.createRadialGradient(
-            this.x, this.y, 0,
-            this.x, this.y, this.size * headOpacity
-        );
-        
-        particleGradient.addColorStop(0, this.color);
-        particleGradient.addColorStop(1, this.color + Math.floor(headOpacity * 0.5 * 255).toString(16).padStart(2, '0'));
-        
-        ctx.fillStyle = particleGradient;
+        // 簡化粒子頭部，不使用漸變
+        ctx.fillStyle = this.color + Math.floor(headOpacity * 255).toString(16).padStart(2, '0');
         ctx.fill();
         
-        // 添加發光效果
-        if (headOpacity > 0.7) {
+        // 只在前半生命週期添加發光效果
+        if (headOpacity > 0.7 && Math.random() < 0.5) { // 隨機添加發光效果
             ctx.shadowBlur = 5;
             ctx.shadowColor = this.color;
             ctx.fill();
@@ -171,8 +174,8 @@ const trail = [];
 
 // 產生煙火爆炸效果
 function createFirework(x, y) {
-    // 粒子數量較少，但每個粒子效果更強
-    const particleCount = 12 + Math.floor(Math.random() * 8);
+    // 進一步減少粒子數量
+    const particleCount = 8 + Math.floor(Math.random() * 6);
     
     // 生成一組向四面八方發射的粒子，模擬爆炸效果
     for (let i = 0; i < particleCount; i++) {
@@ -180,7 +183,7 @@ function createFirework(x, y) {
         const angle = (i / particleCount) * Math.PI * 2;
         
         // 計算隨機速度，使煙火有不同的爆炸半徑
-        const speed = 4 + Math.random() * 6;
+        const speed = 4 + Math.random() * 4;
         
         // 根據角度和速度計算初始速度向量
         const speedX = Math.cos(angle) * speed;
@@ -198,8 +201,8 @@ function createFirework(x, y) {
 
 // 產生大型煙火爆炸
 function createBigFirework(x, y) {
-    // 大型爆炸包含更多的粒子
-    const particleCount = 24 + Math.floor(Math.random() * 12);
+    // 大型爆炸粒子數量也適度減少
+    const particleCount = 16 + Math.floor(Math.random() * 8);
     
     // 生成一組向四面八方發射的粒子，模擬爆炸效果
     for (let i = 0; i < particleCount; i++) {
@@ -207,7 +210,7 @@ function createBigFirework(x, y) {
         const angle = (i / particleCount) * Math.PI * 2;
         
         // 使用更大的初始速度
-        const speed = 6 + Math.random() * 8;
+        const speed = 5 + Math.random() * 7;
         
         // 根據角度和速度計算初始速度向量
         const speedX = Math.cos(angle) * speed;
@@ -218,15 +221,21 @@ function createBigFirework(x, y) {
         particle.speedX = speedX;
         particle.speedY = speedY;
         particle.size = Math.random() * 4 + 2; // 稍大一些的粒子
-        particle.trailLength = 30 + Math.floor(Math.random() * 40); // 更長的尾巴
+        particle.trailLength = 20 + Math.floor(Math.random() * 25); // 更長的尾巴
         
         // 添加到粒子數組
         particles.push(particle);
     }
 }
 
-// 動畫循環
+// 動畫循環 - 添加性能優化
 function animate() {
+    // 檢查粒子數量，如果太多可能導致效能問題，則移除一些
+    if (particles.length > 200) {
+        // 移除最早產生的粒子
+        particles.splice(0, particles.length - 200);
+    }
+    
     // 漸隱效果，進一步減慢消失速度讓粒子停留更久
     ctx.fillStyle = 'rgba(0, 0, 0, 0.015)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -235,8 +244,8 @@ function animate() {
     pointer.x += (mouseX - pointer.x) * 0.2;
     pointer.y += (mouseY - pointer.y) * 0.2;
     
-    // 添加新的尾巴點
-    if (isMoving) {
+    // 添加新的尾巴點，但要控制頻率
+    if (isMoving && Math.random() < 0.6) { // 只有60%的幾率添加尾巴點
         trail.unshift(new TrailPoint(pointer.x, pointer.y));
     }
     
@@ -289,11 +298,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const hammertime = new Hammer(canvas);
     
     // 配置 Hammer 以檢測平移（滑動）手勢
-    hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 5 });
+    hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 8 });
     
     // 定義生成粒子的計時器
     let lastParticleTime = 0;
-    const particleInterval = 20; // 非常短的間隔時間，讓移動設備上反應更靈敏
+    const particleInterval = 80; // 增加間隔時間，減少粒子生成頻率
     
     // 處理平移（滑動）事件
     hammertime.on('panstart panmove', function(ev) {
@@ -308,7 +317,9 @@ document.addEventListener('DOMContentLoaded', function() {
         isMoving = true;
         
         const currentTime = Date.now();
-        if (currentTime - lastParticleTime > particleInterval) {
+        // 只在移動足夠距離且時間間隔足夠時才生成粒子
+        const distance = Math.hypot(mouseX - prevMouseX, mouseY - prevMouseY);
+        if (distance > 10 && currentTime - lastParticleTime > particleInterval) {
             createFirework(mouseX, mouseY);
             lastParticleTime = currentTime;
         }
@@ -337,7 +348,8 @@ document.addEventListener('DOMContentLoaded', function() {
             clearTimeout(moveTimeout);
             
             const currentTime = Date.now();
-            if (currentTime - lastParticleTime > particleInterval) {
+            const distance = Math.hypot(mouseX - prevMouseX, mouseY - prevMouseY);
+            if (distance > 10 && currentTime - lastParticleTime > particleInterval) {
                 createFirework(mouseX, mouseY);
                 lastParticleTime = currentTime;
             }
