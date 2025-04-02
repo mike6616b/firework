@@ -6,8 +6,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>滑起來</title>
-    <link rel="stylesheet" href="style.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>賽博龐克風格互動藝術</title>
+    <link rel="stylesheet" href="style.css?v=1.2">
     <style>
         * {
             touch-action: none;
@@ -19,9 +22,11 @@
             user-select: none;
         }
     </style>
+    <!-- 引入 Hammer.js 庫 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
 </head>
 <body ontouchstart="">
     <canvas id="interactiveCanvas"></canvas>
-    <script src="script.js"></script>
+    <script src="script.js?v=1.2"></script>
 </body>
 </html>
