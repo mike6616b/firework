@@ -1,31 +1,4 @@
-// 產生大型煙火爆炸
-function createBigFirework(x, y) {
-    // 大型爆炸包含更多的粒子
-    const particleCount = 24 + Math.floor(Math.random() * 12);
-    
-    // 生成一組向四面八方發射的粒子，模擬爆炸效果
-    for (let i = 0; i < particleCount; i++) {
-        // 計算角度，使粒子向各個方向發射
-        const angle = (i / particleCount) * Math.PI * 2;
-        
-        // 使用更大的初始速度
-        const speed = 6 + Math.random() * 8;
-        
-        // 根據角度和速度計算初始速度向量
-        const speedX = Math.cos(angle) * speed;
-        const speedY = Math.sin(angle) * speed;
-        
-        // 創建具有指定方向和速度的粒子
-        const particle = new Particle(x, y);
-        particle.speedX = speedX;
-        particle.speedY = speedY;
-        particle.size = Math.random() * 4 + 2; // 稍大一些的粒子
-        particle.trailLength = 30 + Math.floor(Math.random() * 40); // 更長的尾巴
-        
-        // 添加到粒子數組
-        particles.push(particle);
-    }
-}// 取得 canvas 元素和 2D 繪圖環境
+// 取得 canvas 元素和 2D 繪圖環境
 const canvas = document.getElementById('interactiveCanvas');
 const ctx = canvas.getContext('2d'); // ctx 是 context 的縮寫，是慣用名稱
 
@@ -196,40 +169,7 @@ class Particle {
 // 尾巴點數組
 const trail = [];
 
-// 定義生成粒子的計時器和最小間隔
-let lastParticleTime = 0;
-const particleInterval = 100; // 每100毫秒才能產生新的煙火爆炸
-
-// 監聽滑鼠移動事件
-canvas.addEventListener('mousemove', (e) => {
-    // 更新前一個位置
-    prevMouseX = mouseX;
-    prevMouseY = mouseY;
-    
-    // 更新當前位置
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    
-    // 檢測是否正在移動
-    isMoving = true;
-    clearTimeout(moveTimeout);
-    
-    // 如果滑鼠移動距離大於閾值，且超過了最小間隔時間，生成煙火爆炸
-    const distance = Math.hypot(mouseX - prevMouseX, mouseY - prevMouseY);
-    const currentTime = Date.now();
-    
-    if (distance > 8 && currentTime - lastParticleTime > particleInterval) {
-        createFirework(mouseX, mouseY);
-        lastParticleTime = currentTime;
-    }
-    
-    // 設置一個短暫的延遲後將移動狀態設為否
-    moveTimeout = setTimeout(() => {
-        isMoving = false;
-    }, 100);
-});
-
-// 生成煙火爆炸效果
+// 產生煙火爆炸效果
 function createFirework(x, y) {
     // 粒子數量較少，但每個粒子效果更強
     const particleCount = 12 + Math.floor(Math.random() * 8);
@@ -250,6 +190,35 @@ function createFirework(x, y) {
         const particle = new Particle(x, y);
         particle.speedX = speedX;
         particle.speedY = speedY;
+        
+        // 添加到粒子數組
+        particles.push(particle);
+    }
+}
+
+// 產生大型煙火爆炸
+function createBigFirework(x, y) {
+    // 大型爆炸包含更多的粒子
+    const particleCount = 24 + Math.floor(Math.random() * 12);
+    
+    // 生成一組向四面八方發射的粒子，模擬爆炸效果
+    for (let i = 0; i < particleCount; i++) {
+        // 計算角度，使粒子向各個方向發射
+        const angle = (i / particleCount) * Math.PI * 2;
+        
+        // 使用更大的初始速度
+        const speed = 6 + Math.random() * 8;
+        
+        // 根據角度和速度計算初始速度向量
+        const speedX = Math.cos(angle) * speed;
+        const speedY = Math.sin(angle) * speed;
+        
+        // 創建具有指定方向和速度的粒子
+        const particle = new Particle(x, y);
+        particle.speedX = speedX;
+        particle.speedY = speedY;
+        particle.size = Math.random() * 4 + 2; // 稍大一些的粒子
+        particle.trailLength = 30 + Math.floor(Math.random() * 40); // 更長的尾巴
         
         // 添加到粒子數組
         particles.push(particle);
@@ -314,75 +283,81 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// 監聽滑鼠點擊事件，產生爆炸效果
-canvas.addEventListener('click', (e) => {
-    // 產生更大型的煙火爆炸
-    createBigFirework(e.clientX, e.clientY);
-});
-
-// 產生大型煙火爆炸
-function createBigFirework(x, y) {
-    // 大型爆炸包含更多的粒子
-    const particleCount = 24 + Math.floor(Math.random() * 12);
+// 使用 Hammer.js 處理觸控事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化 Hammer 實例
+    const hammertime = new Hammer(canvas);
     
-    // 生成一組向四面八方發射的粒子，模擬爆炸效果
-    for (let i = 0; i < particleCount; i++) {
-        // 計算角度，使粒子向各個方向發射
-        const angle = (i / particleCount) * Math.PI * 2;
+    // 配置 Hammer 以檢測平移（滑動）手勢
+    hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 5 });
+    
+    // 定義生成粒子的計時器
+    let lastParticleTime = 0;
+    const particleInterval = 20; // 非常短的間隔時間，讓移動設備上反應更靈敏
+    
+    // 處理平移（滑動）事件
+    hammertime.on('panstart panmove', function(ev) {
+        // 更新前一個位置
+        prevMouseX = mouseX;
+        prevMouseY = mouseY;
         
-        // 使用更大的初始速度
-        const speed = 6 + Math.random() * 8;
+        // 更新當前位置
+        mouseX = ev.center.x;
+        mouseY = ev.center.y;
         
-        // 根據角度和速度計算初始速度向量
-        const speedX = Math.cos(angle) * speed;
-        const speedY = Math.sin(angle) * speed;
+        isMoving = true;
         
-        // 創建具有指定方向和速度的粒子
-        const particle = new Particle(x, y);
-        particle.speedX = speedX;
-        particle.speedY = speedY;
-        particle.size = Math.random() * 4 + 2; // 稍大一些的粒子
-        particle.trailLength = 30 + Math.floor(Math.random() * 40); // 更長的尾巴
-        
-        // 添加到粒子數組
-        particles.push(particle);
-    }
-}
-
-// 強制在開始時初始化
-window.addEventListener('load', function() {
-    // 延遲一下再初始化，確保所有元素都已加載
-    setTimeout(function() {
-        // 重新綁定事件
-        setupEvents();
-        
-        // 螢幕尺寸可能在進入頁面時沒有正確設置
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        // 強制重繪一次
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        console.log('觸控初始化完成，畫布尺寸：', canvas.width, 'x', canvas.height);
-    }, 300);
-});
-
-// 專門針對iOS的修正
-if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-    // 每幀檢查一次觸控追蹤器
-    setInterval(function() {
-        if (touchActive && touchTracker.positions.length > 0) {
-            checkTouchTracker();
+        const currentTime = Date.now();
+        if (currentTime - lastParticleTime > particleInterval) {
+            createFirework(mouseX, mouseY);
+            lastParticleTime = currentTime;
         }
-    }, 16); // 約60fps
-}
+    });
+    
+    // 處理平移結束事件
+    hammertime.on('panend', function(ev) {
+        isMoving = false;
+        createBigFirework(ev.center.x, ev.center.y);
+    });
+    
+    // 處理點擊事件
+    hammertime.on('tap', function(ev) {
+        createBigFirework(ev.center.x, ev.center.y);
+    });
+    
+    // 處理滑鼠事件（對於非觸控設備）
+    if (!('ontouchstart' in window)) {
+        canvas.addEventListener('mousemove', function(e) {
+            prevMouseX = mouseX;
+            prevMouseY = mouseY;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            isMoving = true;
+            clearTimeout(moveTimeout);
+            
+            const currentTime = Date.now();
+            if (currentTime - lastParticleTime > particleInterval) {
+                createFirework(mouseX, mouseY);
+                lastParticleTime = currentTime;
+            }
+            
+            moveTimeout = setTimeout(function() {
+                isMoving = false;
+            }, 100);
+        });
+        
+        canvas.addEventListener('click', function(e) {
+            createBigFirework(e.clientX, e.clientY);
+        });
+    }
+    
+    // 開始動畫循環
+    animate();
+});
 
 // 監聽視窗大小變化事件，重新設定畫布大小
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 });
-
-// 開始動畫循環
-animate();
