@@ -1,3 +1,3 @@
 # firework
 
-# Just a small project
+Just a small project
